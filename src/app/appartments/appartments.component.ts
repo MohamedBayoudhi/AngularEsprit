@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Apartment } from '../core/models/Appartement';
 import { Residence } from '../core/models/residence';
 import { ActivatedRoute } from '@angular/router';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-appartments',
@@ -43,7 +44,51 @@ likeAppart(appart: Apartment) {
   }
 }
 
-constructor(private act : ActivatedRoute) { }
+apartForm: FormGroup;
+
+constructor(private act : ActivatedRoute) {
+  this.apartForm = new FormGroup({
+    appartNum: new FormControl('', [Validators.required, Validators.pattern('[0-9]+')]),
+    floorNum: new FormControl('', [Validators.required, Validators.pattern('[0-9]+')]),
+    description: new FormControl('', [Validators.required, Validators.minLength(10)]),
+    terrace: new FormControl('', [Validators.required]),
+    surfaceTerrace: new FormControl('', [Validators.required, Validators.min(0), Validators.max(100)]),
+  });
+ }
+
+ onSubmit() {
+  if (this.apartForm.valid) {
+    const appartData = this.apartForm.value;
+
+    
+    const newApartment = {
+      // Map each form control value to the corresponding Apartment property
+      id: null, 
+      appartNum: appartData.appartNum,
+      floorNum: appartData.floorNum,
+      surface: appartData.surface, 
+      terrace: appartData.terrace === 'yes', 
+      surfaceTerrace: appartData.surfaceTerrace,
+      category: appartData.category, 
+      description: appartData.description,
+      residence: { id: this.id }, 
+    };
+
+    const apartmentJSON = JSON.stringify(newApartment);
+
+    // Save the JSON string to local storage
+    localStorage.setItem('apartments', apartmentJSON);
+
+    
+    
+    this.apartForm.reset();
+  } else {
+    // Handle invalid form submission (optional)
+    console.error('Form is invalid!');
+  }
+}
+
+ 
 
 ngOnInit(){
 this.id=this.act.snapshot.params['id'];
